@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<settings>
+  <SDNController>
+    <IPaddress>127.0.0.1</IPaddress>
+    <Port>6633</Port>
+    <probe>5</probe>
+  </SDNController>
+  <config>
+    
+  </config>
+</settings>

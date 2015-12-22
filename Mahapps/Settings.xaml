@@ -1,0 +1,89 @@
+﻿<Controls:MetroWindow x:Class="Mahapps.Settings"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mahapps"
+        mc:Ignorable="d"
+        ShowTitleBar="True"
+        WindowStartupLocation="CenterScreen"
+        Title="Settings" Height="300" Width="800">
+    <StackPanel>
+
+        <Grid Margin="50,50,50,30" DataContext="">
+            <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="15*"/>
+                   
+
+                    
+                </Grid.RowDefinitions>
+            <Label 
+                    Content="Filename" 
+                    Grid.Column="0" 
+                    Grid.Row="0" FontSize="14.667"/>
+            <TextBox 
+                    x:Name="settingsFilenameText" 
+                    Grid.Column="1"
+                    Grid.Row="0" 
+                    Margin="0,0,0,5"
+                    Text="settings.xml"
+                    Width="515" TextAlignment="Right" IsEnabled="False"/>
+            <Label 
+                    Content="IP address" 
+                    Grid.Column="0" 
+                    Grid.Row="1" FontSize="14.667"/>
+                <TextBox 
+                    x:Name="settingsIPText" 
+                    Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged}"
+                    Grid.Column="1"
+                    Grid.Row="1" 
+                    Margin="0,5,0,5"
+               
+                    Width="515" TextAlignment="Right"/>
+
+                <Label 
+                    Content="Port number" 
+                    Grid.Column="0" 
+                    Grid.Row="2" FontSize="14.667" />
+                <TextBox 
+                    x:Name="settingsPortnumberText" 
+                    Grid.Column="1" 
+                    Grid.Row="2" 
+                    Margin="0,5,0,5" 
+                 
+                    Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
+                    Width="515" TextAlignment="Right"
+                    />
+
+                <Label Content="Probe interval" Grid.Column="0" Grid.Row="3" FontSize="14.667"/>
+                <Controls:NumericUpDown 
+                    Width="515" 
+                    Value="5" 
+                    Minimum ="1" 
+                    Maximum = "300"
+                    Interval = "1"  
+                    Grid.Column="1"
+                    Grid.Row="3"
+                    Margin="0,5,0,5" 
+                    />
+        </Grid>
+     
+        <Button 
+            Width="160" 
+            Content="Update" 
+            HorizontalAlignment="Center"
+            x:Name="updateSettingsBtn"
+            Click="updateSettingsBtn_Click"
+            />
+    </StackPanel>
+</Controls:MetroWindow>

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<settings>
+  <SDNController>
+    <IPaddress>192.168.56.101</IPaddress>
+    <Port>8080</Port>
+    <probe>5</probe>
+  </SDNController>
+  <config>
+    
+  </config>
+</settings>
