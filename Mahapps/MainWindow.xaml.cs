@@ -21,6 +21,10 @@ using Mahapps.JSONObj;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Timers;
+using DDOSDefender.JSONObj;
+using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
+using System.Net;
 
 namespace Mahapps
 {
@@ -38,13 +42,14 @@ namespace Mahapps
         ObservableCollection<SDNSwitch> listOfSwitchesObsrv;
 
         List<SDNSwitch> listOfSwitches = new List<SDNSwitch>();
-        // Number of links,switches...
-        NetworkStatus networkStatus;
 
-        // 
-        
         HealthStatus healthStatus = new HealthStatus();
 
+        SystemUptime sytemUptime = new SystemUptime();
+
+        MemoryStatus memoryStatus = new MemoryStatus();
+
+        FirewallStatus firewallStatus = new FirewallStatus();
 
         // Thread lock
         private object Threadlock = new object();
@@ -63,7 +68,7 @@ namespace Mahapps
         {
             InitializeComponent();
 
-           
+
 
             // get settings from XML
             loadSettingsFromXML("settings.xml");
@@ -86,9 +91,13 @@ namespace Mahapps
             listBoxOfSwitches.ItemsSource = listOfSwitchesObsrv;
             listBoxOfSwitches.MouseDoubleClick += ListBoxOfSwitches_MouseDoubleClick;
 
-        
+            SystemUpTimeBox.Text = "" + sytemUptime.UptimeProperty;
 
-    }
+            // get firewall status
+            var firewallthread = new Thread(getFirewallThread);
+            firewallthread.Start();
+
+        }
 
         private void ListBoxOfSwitches_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -96,15 +105,12 @@ namespace Mahapps
         }
 
 
-
-
-
         // Show Settings. Button in the top-left corner
         private void settingsBtn_Click(object sender, RoutedEventArgs e)
         {
             Settings settingsWindow = new Settings();
             settingsWindow.Show();
-            
+
 
         }
 
@@ -154,24 +160,23 @@ namespace Mahapps
         //Method for checking SDN heartbeat
         private void getSDNSwitches()
         {
-            
 
-
-            // Thread safe
-            lock (Threadlock)
+            while (true)
             {
-                while (true)
+                using (var webClient = new System.Net.WebClient())
                 {
-                    using (var webClient = new System.Net.WebClient())
+                    String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/switches/json";
+                    Console.WriteLine("URL=" + url);
+                    var json = webClient.DownloadString(url);
+
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+
+
+                    listOfSwitches = ser.Deserialize<List<SDNSwitch>>(json);
+
+                    try
                     {
-                        String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/switches/json";
-                        Console.WriteLine("URL=" + url);
-                        var json = webClient.DownloadString(url);
-
-                        JavaScriptSerializer ser = new JavaScriptSerializer();
-                        listOfSwitches = ser.Deserialize<List<SDNSwitch>>(json);
-
-                        Dispatcher.Invoke((Action)delegate()
+                        Dispatcher.Invoke((Action)delegate ()
                         {
                             if (listOfSwitchesObsrv.Count == 0)
                             {
@@ -179,7 +184,6 @@ namespace Mahapps
                                 {
 
                                     listOfSwitchesObsrv.Add(sw);
-                                    Console.WriteLine(sw);
                                 }
 
 
@@ -187,74 +191,169 @@ namespace Mahapps
 
 
                         });
-                        
-                        
                     }
-                    Thread.Sleep(probe * 1000);
+                    catch (TaskCanceledException e)
+                    {
+
+                    }
+
+
+
                 }
+                Thread.Sleep(probe * 1000);
+
             }
 
 
-                       
+
         }
 
         // Get number of links, switches
         private void getSDNSummary()
         {
             String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/summary/json";
-            Console.WriteLine("URL=" + url);
             while (true)
             {
                 using (var webClient = new System.Net.WebClient())
                 {
                     var json = webClient.DownloadString(url);
 
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    networkStatus = ser.Deserialize<NetworkStatus>(json);
+                    String jsonStr = json;
+                    String[] jsonArray = jsonStr.Split(',');
+                    Console.WriteLine(jsonArray.ToList());
+                    if (jsonArray.Length >= 4)
+                    {
+                        Regex r = new Regex(@"(\d+)", RegexOptions.IgnoreCase);
+                        Match match1 = r.Match(jsonArray[0]);
+                        numberOfSwitchesTextBox.Dispatcher.BeginInvoke((Action)(() => numberOfSwitchesTextBox.Text = "" + match1.Value));
+                        Match match2 = r.Match(jsonArray[1]);
+                        numberOfQuarantinePortsBox.Dispatcher.BeginInvoke((Action)(() => numberOfQuarantinePortsBox.Text = "" + match2.Value));
+                        Match match3 = r.Match(jsonArray[2]);
+                        numberOfISLBox.Dispatcher.BeginInvoke((Action)(() => numberOfISLBox.Text = "" + match2.Value));
+                        Match match4 = r.Match(jsonArray[3]);
+                        numberOfHosts.Dispatcher.BeginInvoke((Action)(() => numberOfHosts.Text = match4.Value));
+                    }
 
-                    Console.WriteLine(networkStatus);
                 }
 
                 Thread.Sleep(probe * 1000);
             }
-            
+
         }
 
         // Get SDN controller status
         private void getSDNHealthly()
         {
-            while(true)
+            while (true)
             {
-                using(var webClient = new System.Net.WebClient())
+                using (var webClient = new System.Net.WebClient())
                 {
                     String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/health/json";
-                    Console.WriteLine("Healthy thread = " + url);
                     var json = webClient.DownloadString(url);
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     healthStatus = ser.Deserialize<HealthStatus>(json);
-                    Console.WriteLine("Status=" + healthStatus);
 
-                    Dispatcher.Invoke((Action)delegate ()
+                    String url2 = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/system/uptime/json";
+                    sytemUptime = ser.Deserialize<SystemUptime>(webClient.DownloadString(url2));
+
+                    String url3 = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/memory/json";
+                    memoryStatus = ser.Deserialize<MemoryStatus>(webClient.DownloadString(url3));
+
+
+
+                    // Update GUI elements
+                    if (healthStatus.HealthyStatus)
                     {
-                        if (healthStatus.HealthyStatus)
-                            isHealthBox.Text = "HEALTH";
-                        else
-                            isHealthBox.Text = "NOT";
-                    });
+                        isHealthBox.Dispatcher.BeginInvoke((Action)(() => isHealthBox.Text = "OK"));
+                    }
+                    else
+                    {
+                        isHealthBox.Dispatcher.BeginInvoke((Action)(() => isHealthBox.Text = "NOK"));
+                    }
 
-
+SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" + sytemUptime.systemUptimeMsec));
+                    FreeMemoryBox.Dispatcher.BeginInvoke((Action)(() => FreeMemoryBox.Text = "" + memoryStatus.FreeProperty));
+                    TotalMemoryBox.Dispatcher.BeginInvoke((Action)(() => TotalMemoryBox.Text = "" + memoryStatus.TotalPropertry));
+                    // End of GUI update
                 }
 
-                Thread.Sleep(probe * 1000);
+                Thread.Sleep(probe* 1000);
             }
         }
 
-        private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
+        // Checking Firewall availability
+        private void getFirewallThread()
+{
+    while (true)
+    {
+                using (var webClient = new System.Net.WebClient())
+                {
+                    String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/module/status/json";
+                    var json = webClient.DownloadString(url);
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    firewallStatus = ser.Deserialize<FirewallStatus>(json);
+                    if (firewallStatus.result.Equals("firewall disabled"))
+                    {
+                        FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "OFF"));
+                        FirewallToggleButton.Dispatcher.BeginInvoke((Action)(() => FirewallToggleButton.Content = "enable")); 
+                    }
+                    else
+                    {
+                        FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "running"));
+                        FirewallToggleButton.Dispatcher.BeginInvoke((Action)(() => FirewallToggleButton.Content = "disable"));
+                    }
+                    
+                }
+        Thread.Sleep(probe * 1000);
+    }
+
+}
+
+        // Button action to enable/disable firewall functionality
+        private void FirewallToggleButton_Click(object sender, RoutedEventArgs e)
         {
 
-            System.Windows.Data.CollectionViewSource healthStatusViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("healthStatusViewSource")));
-            // Load data by setting the CollectionViewSource.Source property:
-            // healthStatusViewSource.Source = [generic data source]
+            String FWaction = "enable";
+
+            if (FirewallStatusText.Text.Contains("running"))
+            {
+                FWaction = "disable";
+            }
+            else
+            {
+                FWaction = "enable";
+            }
+            String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/module/" + FWaction+ "/json";
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.Method = "PUT";
+            request.AllowWriteStreamBuffering = false;
+            request.ContentType = "application/json";
+            request.Accept = "Accept=application/json";
+            request.SendChunked = false;
+            request.ContentLength = 0;
+            using (var writer = new StreamWriter(request.GetRequestStream()))
+            {
+//                writer.Write();
+            }
+            var response = request.GetResponse() as HttpWebResponse;
+
+            MessageBox.Show("Response: " + response.StatusCode.ToString());
         }
+
+        private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
+{
+
+    System.Windows.Data.CollectionViewSource healthStatusViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("healthStatusViewSource")));
+    // Load data by setting the CollectionViewSource.Source property:
+    // healthStatusViewSource.Source = [generic data source]
+}
+
+
+// Forced closing app
+private void MetroWindow_Closing(object sender, CancelEventArgs e)
+{
+    Environment.Exit(0);
+}
+
     }
 }
