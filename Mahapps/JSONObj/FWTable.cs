@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -10,12 +12,19 @@ namespace DDOSDefender.JSONObj
 
     public class FirewallRules
     {
-        public List<FWEntry> FWRules { get; set; }
+        public ObservableCollection<FWEntry> FWRules { get; set; }
     }
 
     public class FWEntry: INotifyPropertyChanged
     {
-        public int ruleid { get; set; }
+        
+        private int _ruleid { get; set; }
+        [JsonProperty("ruleid")]
+        public int RuleID
+        {
+            get { return _ruleid; }
+            set { _ruleid = value; }
+        }
         public string dpid { get; set; }
         public int in_port { get; set; }
         public string dl_src { get; set; }

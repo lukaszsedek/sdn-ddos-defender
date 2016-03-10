@@ -93,14 +93,17 @@ namespace Mahapps
 
             var updateFWrules = new Thread(updateFWrulesThread);
             updateFWrules.Start();
-        
 
+
+            FWGrid.ItemsSource = FirewallTable.FWRules;
 
             // Collection of logs
             eventList = new ObservableCollection<EventItem>();
             eventList.Add(new EventItem { Severity=EventItem.SEVERITY.Debug, Message = "SDN DDOS mitigation application is up and running" });
             EvenGrid.ItemsSource = eventList;
             
+
+
             
         }
 
@@ -354,7 +357,7 @@ SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" 
                     var json = webClient.DownloadString(url);
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     Console.WriteLine("FW: " + ser.ToString());
-                    FirewallTable.FWRules = ser.Deserialize < List<FWEntry>>(json);
+                    FirewallTable.FWRules = ser.Deserialize <ObservableCollection<FWEntry>>(json);
                     //FirewallTable = ser.Deserialize<Rootobject>(json);
 
                 }
