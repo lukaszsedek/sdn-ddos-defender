@@ -1,17 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using MahApps.Metro.Controls;
 using System.Xml;
 using System.IO;
@@ -20,11 +12,10 @@ using System.Web.Script.Serialization;
 using Mahapps.JSONObj;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Timers;
 using DDOSDefender.JSONObj;
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Net.NetworkInformation;
 
 namespace Mahapps
 {
@@ -51,11 +42,16 @@ namespace Mahapps
 
         FirewallStatus firewallStatus = new FirewallStatus();
 
+        FirewallRules FirewallTable = new FirewallRules();
+
         // Thread lock
         private object Threadlock = new object();
 
         // Query provbe interval
         int probe = 0;
+
+        ObservableCollection<EventItem> eventList;
+
 
         /// <summary>
         /// 
@@ -67,9 +63,7 @@ namespace Mahapps
         public MainWindow()
         {
             InitializeComponent();
-
-
-
+            
             // get settings from XML
             loadSettingsFromXML("settings.xml");
 
@@ -97,6 +91,17 @@ namespace Mahapps
             var firewallthread = new Thread(getFirewallThread);
             firewallthread.Start();
 
+            var updateFWrules = new Thread(updateFWrulesThread);
+            updateFWrules.Start();
+        
+
+
+            // Collection of logs
+            eventList = new ObservableCollection<EventItem>();
+            eventList.Add(new EventItem { Severity=EventItem.SEVERITY.Debug, Message = "SDN DDOS mitigation application is up and running" });
+            EvenGrid.ItemsSource = eventList;
+            
+            
         }
 
         private void ListBoxOfSwitches_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -125,17 +130,41 @@ namespace Mahapps
                     doc.Load(XMLPath);
                     XmlNode settingsNode = doc.DocumentElement.SelectSingleNode("/settings/SDNController");
 
-
-
-                    //    int Port = int.Parse(settingsNode["Port"].Value);
-                    //    int ProbeInterval = int.Parse(settingsNode["Probe"].Value);
-
                     _settings = SettingsSingleton.Instance;
 
                     _settings.IpAddress = settingsNode["IPaddress"].InnerText;
                     _settings.Port = settingsNode["Port"].InnerText;
                     _settings.ProbeInterval = settingsNode["Probe"].InnerText;
                     probe = int.Parse(_settings.ProbeInterval);
+
+                    // Try to ping IP address of controller
+                    Ping pingSender = new Ping();
+                    IPAddress address = IPAddress.Parse(_settings.IpAddress);
+                    PingReply reply = pingSender.Send(address);
+                    if (reply.Status == IPStatus.Success)
+                    {
+                        using (var webClient = new System.Net.WebClient())
+                        {
+                            try {
+                                String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/health/json";
+                                var json = webClient.DownloadString(url);
+                                JavaScriptSerializer ser = new JavaScriptSerializer();
+                                healthStatus = ser.Deserialize<HealthStatus>(json);
+
+                            }
+                            catch (WebException e)
+                            {
+                                MessageBox.Show("Unable to connect REST service. Please chech Floodlight application or change IP address in settings.xml file  \n" + e.Message + "\n" + e.StackTrace, "Error 5", MessageBoxButton.OK, MessageBoxImage.Error);
+                                Environment.Exit(0);
+                            }
+                            }
+                            
+                    }
+                    else
+                    {
+                        MessageBox.Show(_settings.IpAddress + " address is unreachable", "Error 4", MessageBoxButton.OK, MessageBoxImage.Error);
+                        
+                    }
 
                 }
                 catch (NullReferenceException e)
@@ -166,7 +195,6 @@ namespace Mahapps
                 using (var webClient = new System.Net.WebClient())
                 {
                     String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/switches/json";
-                    Console.WriteLine("URL=" + url);
                     var json = webClient.DownloadString(url);
 
                     JavaScriptSerializer ser = new JavaScriptSerializer();
@@ -214,13 +242,13 @@ namespace Mahapps
             String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/summary/json";
             while (true)
             {
+
                 using (var webClient = new System.Net.WebClient())
                 {
                     var json = webClient.DownloadString(url);
 
                     String jsonStr = json;
                     String[] jsonArray = jsonStr.Split(',');
-                    Console.WriteLine(jsonArray.ToList());
                     if (jsonArray.Length >= 4)
                     {
                         Regex r = new Regex(@"(\d+)", RegexOptions.IgnoreCase);
@@ -252,6 +280,8 @@ namespace Mahapps
                     var json = webClient.DownloadString(url);
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     healthStatus = ser.Deserialize<HealthStatus>(json);
+
+                    
 
                     String url2 = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/system/uptime/json";
                     sytemUptime = ser.Deserialize<SystemUptime>(webClient.DownloadString(url2));
@@ -292,15 +322,18 @@ SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" 
                     var json = webClient.DownloadString(url);
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     firewallStatus = ser.Deserialize<FirewallStatus>(json);
+                    Console.WriteLine(firewallStatus.result);
                     if (firewallStatus.result.Equals("firewall disabled"))
                     {
                         FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "OFF"));
-                        FirewallToggleButton.Dispatcher.BeginInvoke((Action)(() => FirewallToggleButton.Content = "enable")); 
+                        // FirewallToggleButton.Dispatcher.BeginInvoke((Action)(() => FirewallToggleButton.Content = "enable"));
+                        Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem( "Firewall is off", EventItem.SEVERITY.Critical) )));
                     }
                     else
                     {
                         FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "running"));
-                        FirewallToggleButton.Dispatcher.BeginInvoke((Action)(() => FirewallToggleButton.Content = "disable"));
+                        Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall is running", EventItem.SEVERITY.Informational))));
+                        
                     }
                     
                 }
@@ -308,6 +341,47 @@ SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" 
     }
 
 }
+
+        private void updateFWrulesThread()
+        {
+            //http://192.168.56.101:8080/wm/firewall/rules/json
+
+            while (true)
+            {
+                using (var webClient = new System.Net.WebClient())
+                {
+                    String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/rules/json";
+                    var json = webClient.DownloadString(url);
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    Console.WriteLine("FW: " + ser.ToString());
+                    FirewallTable.FWRules = ser.Deserialize < List<FWEntry>>(json);
+                    //FirewallTable = ser.Deserialize<Rootobject>(json);
+
+                }
+                
+
+                Thread.Sleep(probe * 1000);
+            }
+        }
+        // Button action to enable statistics
+        private void StatisticsButton_Click(object sender, RoutedEventArgs e)
+        {
+            String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/statistics/config/enable/json";
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.Method = "POST";
+            request.AllowWriteStreamBuffering = false;
+            request.ContentType = "application/json";
+            request.Accept = "Accept=application/json";
+            request.SendChunked = false;
+            request.ContentLength = 0;
+            using (var writer = new StreamWriter(request.GetRequestStream()))
+            {
+                
+            }
+            var response = request.GetResponse() as HttpWebResponse;
+            Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Statistics : " + response.StatusCode.ToString(), EventItem.SEVERITY.Informational))));
+
+        }
 
         // Button action to enable/disable firewall functionality
         private void FirewallToggleButton_Click(object sender, RoutedEventArgs e)
@@ -337,7 +411,10 @@ SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" 
             }
             var response = request.GetResponse() as HttpWebResponse;
 
-            MessageBox.Show("Response: " + response.StatusCode.ToString());
+            
+
+
+            Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall module status : " + response.StatusCode.ToString(), EventItem.SEVERITY.Informational))));
         }
 
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
@@ -354,6 +431,7 @@ private void MetroWindow_Closing(object sender, CancelEventArgs e)
 {
     Environment.Exit(0);
 }
+
 
     }
 }

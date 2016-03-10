@@ -102,20 +102,32 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="250"  />
+                            <ColumnDefinition Width="150"  />
+                            <ColumnDefinition Width="100" />
                             <ColumnDefinition Width="100" />
                         </Grid.ColumnDefinitions>
                         <Label Grid.Row="0" Grid.Column="0" Content="Firewall Status:"/>
-                        <Button Grid.Row="1" Grid.Column="1" Content="{Binding Text, ElementName=FirewallStatusText}" Click="FirewallToggleButton_Click"  x:Name="FirewallToggleButton"/>
+                        <Button Grid.Row="0" Grid.Column="2" Content="ENABLE" Click="FirewallToggleButton_Click"  x:Name="FirewallToggleButton" />
                         <TextBox Grid.Column="1" Grid.Row="0" Margin="3" Width="100" IsEnabled="False" x:Name="FirewallStatusText"/>
-                        
+                        <Label Grid.Row="1" Grid.Column="0" Content="Statistics"/>
+                        <TextBox Grid.Column="1" Grid.Row="1" Margin="3" Width="100" IsEnabled="False"/>
+                        <Button Grid.Row="1" Grid.Column="2" x:Name="StatisticsButton" Content="ENABLE" Click="StatisticsButton_Click" />
                     </Grid>
+                </GroupBox>
+                <GroupBox x:Name="DDOSrules" Header="DDOS rules" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan ="3">
+                    
+                </GroupBox>
+                <GroupBox x:Name="FirewallRules"  Header="Firewall rules" Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan ="3">
+                    <DataGrid x:Name="FWGrid" ItemsSource="{Binding FirewallTable.FWRules}"></DataGrid>
+
                 </GroupBox>
 
             </Grid>
         </TabItem>
         <TabItem Header="Events log">
-        
+            <DataGrid x:Name="EvenGrid" ItemsSource="{Binding eventList}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True">
+
+            </DataGrid>
         </TabItem>
         <TabItem Header="About">
             <StackPanel>
