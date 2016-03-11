@@ -12,7 +12,7 @@ using System.Web.Script.Serialization;
 using Mahapps.JSONObj;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-using DDOSDefender.JSONObj;
+using Mahapps.JSONObj;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -42,7 +42,7 @@ namespace Mahapps
 
         FirewallStatus firewallStatus = new FirewallStatus();
 
-        FirewallRules FirewallTable = new FirewallRules();
+        ObservableCollection<FWEntry> FWrules = new ObservableCollection<FWEntry>();
 
         // Thread lock
         private object Threadlock = new object();
@@ -94,17 +94,21 @@ namespace Mahapps
             var updateFWrules = new Thread(updateFWrulesThread);
             updateFWrules.Start();
 
-
-            FWGrid.ItemsSource = FirewallTable.FWRules;
-
+            statsGrid.ItemsSource = stats;
+            var getStats = new Thread(getStatsThread);
+            getStats.Start();
+            
             // Collection of logs
             eventList = new ObservableCollection<EventItem>();
             eventList.Add(new EventItem { Severity=EventItem.SEVERITY.Debug, Message = "SDN DDOS mitigation application is up and running" });
             EvenGrid.ItemsSource = eventList;
-            
+            FWGrid.ItemsSource = FWrules;
 
+            DDOSGrid.ItemsSource = DDosTable;
+            loadDDOSRules("ddos_config.xml");
+            var ddosCheckerThread = new Thread(DDOSThread);
+            ddosCheckerThread.Start();
 
-            
         }
 
         private void ListBoxOfSwitches_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -166,6 +170,7 @@ namespace Mahapps
                     else
                     {
                         MessageBox.Show(_settings.IpAddress + " address is unreachable", "Error 4", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Environment.Exit(0);
                         
                     }
 
@@ -189,56 +194,7 @@ namespace Mahapps
 
         }
 
-        //Method for checking SDN heartbeat
-        private void getSDNSwitches()
-        {
-
-            while (true)
-            {
-                using (var webClient = new System.Net.WebClient())
-                {
-                    String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/switches/json";
-                    var json = webClient.DownloadString(url);
-
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-
-
-                    listOfSwitches = ser.Deserialize<List<SDNSwitch>>(json);
-
-                    try
-                    {
-                        Dispatcher.Invoke((Action)delegate ()
-                        {
-                            if (listOfSwitchesObsrv.Count == 0)
-                            {
-                                foreach (SDNSwitch sw in listOfSwitches)
-                                {
-
-                                    listOfSwitchesObsrv.Add(sw);
-                                }
-
-
-                            }
-
-
-                        });
-                    }
-                    catch (TaskCanceledException e)
-                    {
-
-                    }
-
-
-
-                }
-                Thread.Sleep(probe * 1000);
-
-            }
-
-
-
-        }
-
+ 
         // Get number of links, switches
         private void getSDNSummary()
         {
@@ -314,58 +270,7 @@ SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" 
             }
         }
 
-        // Checking Firewall availability
-        private void getFirewallThread()
-{
-    while (true)
-    {
-                using (var webClient = new System.Net.WebClient())
-                {
-                    String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/module/status/json";
-                    var json = webClient.DownloadString(url);
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    firewallStatus = ser.Deserialize<FirewallStatus>(json);
-                    Console.WriteLine(firewallStatus.result);
-                    if (firewallStatus.result.Equals("firewall disabled"))
-                    {
-                        FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "OFF"));
-                        // FirewallToggleButton.Dispatcher.BeginInvoke((Action)(() => FirewallToggleButton.Content = "enable"));
-                        Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem( "Firewall is off", EventItem.SEVERITY.Critical) )));
-                    }
-                    else
-                    {
-                        FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "running"));
-                        Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall is running", EventItem.SEVERITY.Informational))));
-                        
-                    }
-                    
-                }
-        Thread.Sleep(probe * 1000);
-    }
 
-}
-
-        private void updateFWrulesThread()
-        {
-            //http://192.168.56.101:8080/wm/firewall/rules/json
-
-            while (true)
-            {
-                using (var webClient = new System.Net.WebClient())
-                {
-                    String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/rules/json";
-                    var json = webClient.DownloadString(url);
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    Console.WriteLine("FW: " + ser.ToString());
-                    FirewallTable.FWRules = ser.Deserialize <ObservableCollection<FWEntry>>(json);
-                    //FirewallTable = ser.Deserialize<Rootobject>(json);
-
-                }
-                
-
-                Thread.Sleep(probe * 1000);
-            }
-        }
         // Button action to enable statistics
         private void StatisticsButton_Click(object sender, RoutedEventArgs e)
         {

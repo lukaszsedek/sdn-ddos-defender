@@ -80,7 +80,7 @@
      
         <Button 
             Width="160" 
-            Content="Update" 
+            Content="Close" 
             HorizontalAlignment="Center"
             x:Name="updateSettingsBtn"
             Click="updateSettingsBtn_Click"

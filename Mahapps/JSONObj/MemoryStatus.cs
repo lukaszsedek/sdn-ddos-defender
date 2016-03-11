@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DDOSDefender.JSONObj
+namespace Mahapps.JSONObj
 {
     class MemoryStatus: INotifyPropertyChanged
     {

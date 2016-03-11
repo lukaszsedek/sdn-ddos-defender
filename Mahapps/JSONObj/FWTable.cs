@@ -7,14 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DDOSDefender.JSONObj
+namespace Mahapps.JSONObj
 {
 
-    public class FirewallRules
-    {
-        public ObservableCollection<FWEntry> FWRules { get; set; }
-    }
-
+ 
     public class FWEntry: INotifyPropertyChanged
     {
         
@@ -50,7 +46,7 @@ namespace DDOSDefender.JSONObj
         public int priority { get; set; }
         public string action { get; set; }
 
-
+    
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void onPropertyChanged(object sender, string propertyName)

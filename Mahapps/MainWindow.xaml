@@ -115,19 +115,25 @@
                     </Grid>
                 </GroupBox>
                 <GroupBox x:Name="DDOSrules" Header="DDOS rules" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan ="3">
-                    
+                    <DataGrid x:Name="DDOSGrid" ItemsSource="{ Binding DDosTable, UpdateSourceTrigger=PropertyChanged}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"/>
                 </GroupBox>
-                <GroupBox x:Name="FirewallRules"  Header="Firewall rules" Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan ="3">
-                    <DataGrid x:Name="FWGrid" ItemsSource="{Binding FirewallTable.FWRules}"></DataGrid>
+                <GroupBox x:Name="StatisticsBox"  Header="Statistics" Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan ="3">
+                    <DataGrid x:Name="statsGrid" ItemsSource="{Binding stats, UpdateSourceTrigger=PropertyChanged}" />
 
                 </GroupBox>
 
             </Grid>
         </TabItem>
         <TabItem Header="Events log">
-            <DataGrid x:Name="EvenGrid" ItemsSource="{Binding eventList}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True">
+            <DataGrid x:Name="EvenGrid" ItemsSource="{Binding eventList, UpdateSourceTrigger=PropertyChanged}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True">
 
             </DataGrid>
+        </TabItem>
+        <TabItem Header="Firewall">
+            <DataGrid x:Name="FWGrid" ItemsSource="{Binding FWrules}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"></DataGrid>
+        </TabItem>
+        <TabItem Header="FlowTable">
+            
         </TabItem>
         <TabItem Header="About">
             <StackPanel>

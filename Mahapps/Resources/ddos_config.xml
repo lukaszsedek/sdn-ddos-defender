@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DDOS>
+  <rule id="1">
+    <switch>
+      <DPID>00:00:00:00:00:00:00:04</DPID>
+      <port>3</port>
+    </switch>
+    <flow>
+      <ipdst>10.0.3.1</ipdst>
+      <maxTXBPS>1000</maxTXBPS>
+      <maxRXBPS>1000</maxRXBPS>
+    </flow>
+    <action>DROP</action>
+  </rule>
+  <rule id="2">
+    <switch>
+      <DPID>00:00:00:00:00:00:00:04</DPID>
+      <port>1</port>
+    </switch>
+    <flow>
+      <ipdst>10.0.2.1</ipdst>
+      <maxTXBPS>1000</maxTXBPS>
+      <maxRXBPS>1000</maxRXBPS>
+    </flow>
+    <action>ALERT</action>
+  </rule>
+  <rule id="3">
+    <switch>
+      <DPID>00:00:00:00:00:00:00:04</DPID>
+      <port>1</port>
+    </switch>
+    <flow>
+      <ipdst>10.0.3.1</ipdst>
+      <maxTXBPS>1000</maxTXBPS>
+      <maxRXBPS>1000</maxRXBPS>
+    </flow>
+    <action>ALERT</action>
+  </rule>
+  <rule id="4">
+    <switch>
+      <DPID>00:00:00:00:00:00:00:04</DPID>
+      <port>1</port>
+    </switch>
+    <flow>
+      <ipdst>10.0.1.1</ipdst>
+      <maxTXBPS>1000</maxTXBPS>
+      <maxRXBPS>1000</maxRXBPS>
+    </flow>
+    <action>DROP</action>
+  </rule>
+</DDOS>

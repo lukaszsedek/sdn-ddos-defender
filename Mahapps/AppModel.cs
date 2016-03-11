@@ -1,4 +1,4 @@
-﻿using DDOSDefender.JSONObj;
+﻿using Mahapps.JSONObj;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DDOSDefender
+namespace Mahapps
 {
     class AppModel : INotifyPropertyChanged
     {

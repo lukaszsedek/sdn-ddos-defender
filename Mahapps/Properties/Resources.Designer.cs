@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DDOSDefender.Properties {
+namespace Mahapps.Properties {
     using System;
     
     
