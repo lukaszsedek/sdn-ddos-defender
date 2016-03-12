@@ -16,6 +16,8 @@ using Mahapps.JSONObj;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Net.NetworkInformation;
+using DDOSDefender;
+using Microsoft.Win32;
 
 namespace Mahapps
 {
@@ -25,6 +27,7 @@ namespace Mahapps
     public partial class MainWindow : MetroWindow, INotifyPropertyChanged
     {
         public delegate void degegateHealthStatus(string text);
+
 
         // Settings singleton instance
         SettingsSingleton _settings;
@@ -62,8 +65,10 @@ namespace Mahapps
 
         public MainWindow()
         {
-            InitializeComponent();
             
+            InitializeComponent();
+
+  
             // get settings from XML
             loadSettingsFromXML("settings.xml");
 
@@ -129,12 +134,34 @@ namespace Mahapps
         // Loading process
         private bool loadSettingsFromXML(String XMLPath)
         {
+            String tempStr = XMLPath;
             if (XMLPath != null)
             {
+                if(!File.Exists(XMLPath))
+                {
+                    OpenFileDialog openFileDialog1 = new OpenFileDialog();
+
+                    // Set filter options and filter index.
+                    openFileDialog1.Filter = "Text Files (.xml)|*.xml|All Files (*.*)|*.*";
+                    openFileDialog1.FilterIndex = 1;
+                    openFileDialog1.Multiselect = true;
+
+                    bool? userClickedOK = openFileDialog1.ShowDialog();
+                    // Process input if the user clicked OK.
+                    if (userClickedOK == true)
+                    {
+                        tempStr = openFileDialog1.FileName;
+                    }
+                    else
+                    {
+                        Environment.Exit(0);
+                    }
+                }
+                
                 try
                 {
                     XmlDocument doc = new XmlDocument();
-                    doc.Load(XMLPath);
+                    doc.Load(tempStr);
                     XmlNode settingsNode = doc.DocumentElement.SelectSingleNode("/settings/SDNController");
 
                     _settings = SettingsSingleton.Instance;
@@ -333,9 +360,24 @@ SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" 
     // healthStatusViewSource.Source = [generic data source]
 }
 
+        private void AddDDOS_Button_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            // Set filter options and filter index.
+            openFileDialog.Filter = "Text Files (.xml)|*.xml|All Files (*.*)|*.*";
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.Multiselect = true;
 
-// Forced closing app
-private void MetroWindow_Closing(object sender, CancelEventArgs e)
+            bool? userClickedOK = openFileDialog.ShowDialog();
+            // Process input if the user clicked OK.
+            if (userClickedOK == true)
+            {
+                DDosTable = new ObservableCollection<DDOSDefender.JSONObj.DDOSTable>();
+                loadDDOSRules(openFileDialog.FileName);
+            }
+        }
+        // Forced closing app
+        private void MetroWindow_Closing(object sender, CancelEventArgs e)
 {
     Environment.Exit(0);
 }

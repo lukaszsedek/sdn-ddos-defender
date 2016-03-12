@@ -15,62 +15,68 @@ namespace Mahapps
     public partial class MainWindow
     {
         ObservableCollection<DDOSTable> DDosTable = new ObservableCollection<DDOSTable> ();
-        
+
         // Load DDOS rules from xml file
         public void loadDDOSRules(String _filename)
         {
-            if(_filename != null)
+            if (_filename != null)
             {
                 XmlDocument doc = new XmlDocument();
-                try {
-                    doc.Load("ddos_config.xml");
-                    foreach (XmlNode node in doc.DocumentElement.ChildNodes)
+                if (File.Exists(_filename))
+                {
+                    try
                     {
-                        if (node.Name == "rule")
+                        doc.Load(_filename);
+                        foreach (XmlNode node in doc.DocumentElement.ChildNodes)
                         {
-                            DDOSTable rule = new DDOSTable();
-                            rule.ID = node.Attributes["id"].InnerText;
-                            foreach (XmlNode ruleChild in node)
+                            if (node.Name == "rule")
                             {
-                                if (ruleChild.Name == "switch")
+                                DDOSTable rule = new DDOSTable();
+                                rule.ID = node.Attributes["id"].InnerText;
+                                foreach (XmlNode ruleChild in node)
                                 {
-                                    rule.SwitchID = ruleChild["DPID"].InnerText;
-                                    rule.Port = ruleChild["port"].InnerText;
-                                }
-                                else if (ruleChild.Name == "flow")
-                                {
-                                    rule.IPDST = ruleChild["ipdst"].InnerText;
-                                    rule.MAX_RX_BPS = ruleChild["maxRXBPS"].InnerText;
-                                    rule.MAX_TX_BPS = ruleChild["maxTXBPS"].InnerText;
-                                
-                                }else if(ruleChild.Name == "action")
-                                {
-                                    if(ruleChild.InnerText == "DROP")
+                                    if (ruleChild.Name == "switch")
                                     {
-                                        rule.Action = DDOSTable.action.DROP;
+                                        rule.SwitchID = ruleChild["DPID"].InnerText;
+                                        rule.Port = ruleChild["port"].InnerText;
                                     }
-                                    else
+                                    else if (ruleChild.Name == "flow")
                                     {
-                                        rule.Action = DDOSTable.action.ALERT;
+                                        rule.IPDST = ruleChild["ipdst"].InnerText;
+                                        rule.MAX_RX_BPS = ruleChild["maxRXBPS"].InnerText;
+                                        rule.MAX_TX_BPS = ruleChild["maxTXBPS"].InnerText;
+
                                     }
+                                    else if (ruleChild.Name == "action")
+                                    {
+                                        if (ruleChild.InnerText == "DROP")
+                                        {
+                                            rule.Action = DDOSTable.action.DROP;
+                                        }
+                                        else
+                                        {
+                                            rule.Action = DDOSTable.action.ALERT;
+                                        }
+                                    }
+
                                 }
+                                {
+
+                                }
+                                DDosTable.Add(rule);
 
                             }
-                            {
-
-                            }
-                            DDosTable.Add(rule);
 
                         }
-
                     }
-                }catch (FileNotFoundException e)
-                {
-                    MessageBox.Show("Cannot load DDOS config file. DDOS rules remain empty\n" + e.Message + "\n" + e.StackTrace, "Error 5", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                    catch (FileNotFoundException e)
+                    {
+                        MessageBox.Show("Cannot load DDOS config file. DDOS rules remain empty\n" + e.Message + "\n" + e.StackTrace, "Error 5", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
 
+                }
+                //DDosTable.Add(new DDOSTable { ID = 1, SwitchID = "0.....1" });
             }
-            //DDosTable.Add(new DDOSTable { ID = 1, SwitchID = "0.....1" });
         }
 
         // DDOS checker

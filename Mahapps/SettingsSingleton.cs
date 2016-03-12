@@ -13,7 +13,7 @@ namespace Mahapps
         public  String IpAddress { get; set; }
         public  String Port { get; set; }
         public  String ProbeInterval { get; set; }
-
+        public  String FileName { get ; set; }
         // Singleton instance
         private static SettingsSingleton instance;
 
@@ -23,7 +23,7 @@ namespace Mahapps
         public event PropertyChangedEventHandler PropertyChanged;
 
         // fake ctor
-        private SettingsSingleton() { }
+        private SettingsSingleton() {}
 
         // get method
         public static SettingsSingleton Instance
