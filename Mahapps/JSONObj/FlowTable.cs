@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DDOSDefender.JSONObj
 {
-    public class FlowTable
+    public class SDNFlowTable: INotifyPropertyChanged
     {
                 
-        public Flow[] flows { get; set; }
+        public ObservableCollection<Flow> flows { get; set; }
         
-
+        /*
+            Flow from FlowTable
+        */
         public class Flow
         {
+            public string switchID { get; set; }
             public string version { get; set; }
             public string cookie { get; set; }
             public string tableId { get; set; }
@@ -37,11 +42,27 @@ namespace DDOSDefender.JSONObj
             public string eth_type { get; set; }
             public string ipv4_src { get; set; }
             public string ipv4_dst { get; set; }
+            public string udp_src { get; set; }
+            public string udp_dst { get; set; }
+
+            public override string ToString()
+            {
+                return " in port=" + in_port + " dst=" + ipv4_dst + " src=" + ipv4_src + " upd_src=" + udp_src + " udp_dst=" + udp_src;
+                
+            }
         }
 
         public class Instructions
         {
             public Instruction_Apply_Actions instruction_apply_actions { get; set; }
+
+            public override string ToString()
+            {
+                if (instruction_apply_actions != null)
+                    return instruction_apply_actions.actions;
+                else
+                    return "drop";
+            }
         }
 
         public class Instruction_Apply_Actions
@@ -49,5 +70,21 @@ namespace DDOSDefender.JSONObj
             public string actions { get; set; }
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void NotifyPropertyChanged(string propertyName)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+

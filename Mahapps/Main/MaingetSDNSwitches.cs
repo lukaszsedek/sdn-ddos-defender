@@ -11,10 +11,7 @@ namespace Mahapps
 {
     public partial class MainWindow
     {
-          public void test()
-        {
-            Console.WriteLine("test");
-        }
+
 
 
         //Method for checking SDN heartbeat

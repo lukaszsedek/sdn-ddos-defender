@@ -95,6 +95,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
@@ -132,6 +133,7 @@
     <Compile Include="JSONObj\Statistics.cs" />
     <Compile Include="JSONObj\SystemUptime.cs" />
     <Compile Include="Main\MainDDOSRules.cs" />
+    <Compile Include="Main\MainFlowTableThread.cs" />
     <Compile Include="Main\MainFWThreads.cs" />
     <Compile Include="Main\MaingetSDNSwitches.cs" />
     <Compile Include="Main\MainStatistics.cs" />

@@ -29,12 +29,12 @@ namespace Mahapps
                     {
                         FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "OFF"));
                         // FirewallToggleButton.Dispatcher.BeginInvoke((Action)(() => FirewallToggleButton.Content = "enable"));
-                        Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall is off", EventItem.SEVERITY.Critical))));
+                        //Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall is off", EventItem.SEVERITY.Critical))));
                     }
                     else
                     {
                         FirewallStatusText.Dispatcher.BeginInvoke((Action)(() => FirewallStatusText.Text = "running"));
-                        Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall is running", EventItem.SEVERITY.Informational))));
+                        //Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall is running", EventItem.SEVERITY.Informational))));
 
                     }
 

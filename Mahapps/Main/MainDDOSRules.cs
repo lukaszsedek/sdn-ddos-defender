@@ -1,14 +1,12 @@
 ﻿using DDOSDefender.JSONObj;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
+using System.Numerics;
+using Mahapps.JSONObj;
 
 namespace Mahapps
 {
@@ -84,7 +82,46 @@ namespace Mahapps
         {
             while (true)
             {
-                Console.WriteLine("DEBUG DDOS CHECKER");
+                Console.WriteLine("DEBUG DDOS CHECKER START");
+                // Check each entry in DDOS Table
+                foreach (DDOSTable _t in DDosTable)
+                {
+                    // Check each statistic
+                    foreach (Statistics _s in stats)
+                    {
+                        // chech each switch@port
+                        if(_t.SwitchID == _s.dpid && _t.Port == _s.port)
+                        {
+                            BigInteger tMAXRX = BigInteger.Parse(_t.MAX_RX_BPS);
+                            BigInteger sMAXRX = BigInteger.Parse(_s.BPPSRX);
+                            // DDOS DETECTED on RX direction
+                            if (sMAXRX > tMAXRX)
+                            {
+                                // make an alert in event logs
+                                if(_t.Action == DDOSTable.action.ALERT)
+                                {
+                                    String alarmMSG = "DDOS detected! " + _t.SwitchID + ": " + _t.Port +
+                                        " \\current MAX RX BPS value is higher than expected. Current value is "
+                                        + sMAXRX + " threshold is " + tMAXRX;
+                                    Dispatcher.BeginInvoke(
+                                        (Action)(
+                                        () => eventList.Add(new EventItem(alarmMSG, EventItem.SEVERITY.Alert))
+                                        )
+                                        );
+                                }
+                                if (_t.Action == DDOSTable.action.DROP)
+                                {
+                                    Console.WriteLine(_t.SwitchID + ":" + _t.Port + ":" + _t.MAX_RX_BPS);
+                                }
+                                
+                            }
+                            
+                        }
+                    }
+                    
+                }
+
+                Console.WriteLine("DEBUG DDOS CHECKER START");
 
                 Thread.Sleep(probe * 1000);
             }

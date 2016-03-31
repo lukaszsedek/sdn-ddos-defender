@@ -18,7 +18,7 @@ namespace DDOSDefender.JSONObj
         [DataMember(Name = "updated")]
         public string updated { get; set; }
         [DataMember(Name = "bits-per-second-rx")]
-        public string bitspersecondrx { get; set; }
+        private string bitspersecondrx { get; set; }
         
         public String BPPSRX
         {
@@ -28,6 +28,11 @@ namespace DDOSDefender.JSONObj
         [DataMember(Name = "bits-per-second-tx")]
         private string bitspersecondtx { get; set; }
 
+        public String BPSTX
+        {
+            get { return bitspersecondtx;  }
+            set { bitspersecondtx = value; }
+        }
         public override string ToString()
         {
             return dpid + " " + port + " " + updated + " " + BPPSRX + " " + bitspersecondtx;

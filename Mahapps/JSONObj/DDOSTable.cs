@@ -59,6 +59,10 @@ namespace DDOSDefender.JSONObj
             set { _action = value; }
         }
 
+        public override string ToString()
+        {
+            return "action=" + Action + ";switchID=" +SwitchID + ";port=" + Port + "; maxTX=" + MAX_TX_BPS + ";maxRX=" + MAX_RX_BPS;
+        }
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void NotifyPropertyChanged(string propertyName)

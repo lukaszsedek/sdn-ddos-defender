@@ -93,7 +93,7 @@
                         <TextBox Grid.Column="1" Grid.Row="3" Margin="3" IsEnabled="False" x:Name="TotalMemoryBox" />
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="FirewallStatusBox" Header="Health Status" Grid.Row="0" Grid.Column="3" Height="180">
+                <GroupBox x:Name="FirewallStatusBox" Header="Utils" Grid.Row="0" Grid.Column="3" Height="180">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -132,10 +132,10 @@
             </DataGrid>
         </TabItem>
         <TabItem Header="Firewall">
-            <DataGrid x:Name="FWGrid" ItemsSource="{Binding FWrules}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"></DataGrid>
+            <DataGrid x:Name="FWGrid" ItemsSource="{Binding FWrules, UpdateSourceTrigger=PropertyChanged}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"></DataGrid>
         </TabItem>
         <TabItem Header="FlowTable">
-            
+            <DataGrid x:Name="FlowTableGird" />
         </TabItem>
         <TabItem Header="About">
             <StackPanel>

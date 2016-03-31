@@ -114,6 +114,10 @@ namespace Mahapps
             var ddosCheckerThread = new Thread(DDOSThread);
             ddosCheckerThread.Start();
 
+            FlowTableGird.ItemsSource = sdnFlowTable.flows;
+            var flowTableThread = new Thread(FlowTableThread);
+            flowTableThread.Start();
+
         }
 
         private void ListBoxOfSwitches_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -286,8 +290,10 @@ namespace Mahapps
                     {
                         isHealthBox.Dispatcher.BeginInvoke((Action)(() => isHealthBox.Text = "NOK"));
                     }
+                    TimeSpan time = TimeSpan.FromMilliseconds(sytemUptime.systemUptimeMsec);
+                    string uptime = time.ToString(@"hh\:mm\:ss\.fff");
 
-SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" + sytemUptime.systemUptimeMsec));
+                    SystemUpTimeBox.Dispatcher.BeginInvoke((Action)(() => SystemUpTimeBox.Text = "" + uptime));
                     FreeMemoryBox.Dispatcher.BeginInvoke((Action)(() => FreeMemoryBox.Text = "" + memoryStatus.FreeProperty));
                     TotalMemoryBox.Dispatcher.BeginInvoke((Action)(() => TotalMemoryBox.Text = "" + memoryStatus.TotalPropertry));
                     // End of GUI update
