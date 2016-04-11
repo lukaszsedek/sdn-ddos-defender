@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using MahApps.Metro.Controls;
@@ -12,11 +10,9 @@ using System.Web.Script.Serialization;
 using Mahapps.JSONObj;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-using Mahapps.JSONObj;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Net.NetworkInformation;
-using DDOSDefender;
 using Microsoft.Win32;
 
 namespace Mahapps
@@ -143,18 +139,17 @@ namespace Mahapps
             {
                 if(!File.Exists(XMLPath))
                 {
-                    OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
+                    OpenFileDialog openFileDialogXML = new OpenFileDialog();
                     // Set filter options and filter index.
-                    openFileDialog1.Filter = "Text Files (.xml)|*.xml|All Files (*.*)|*.*";
-                    openFileDialog1.FilterIndex = 1;
-                    openFileDialog1.Multiselect = true;
+                    openFileDialogXML.Filter = "Text Files (.xml)|*.xml|All Files (*.*)|*.*";
+                    openFileDialogXML.FilterIndex = 1;
+                    openFileDialogXML.Multiselect = true;
 
-                    bool? userClickedOK = openFileDialog1.ShowDialog();
+                    bool? userClickedOK = openFileDialogXML.ShowDialog();
                     // Process input if the user clicked OK.
                     if (userClickedOK == true)
                     {
-                        tempStr = openFileDialog1.FileName;
+                        tempStr = openFileDialogXML.FileName;
                     }
                     else
                     {
@@ -232,7 +227,6 @@ namespace Mahapps
             String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/summary/json";
             while (true)
             {
-
                 using (var webClient = new System.Net.WebClient())
                 {
                     var json = webClient.DownloadString(url);
@@ -251,7 +245,6 @@ namespace Mahapps
                         Match match4 = r.Match(jsonArray[3]);
                         numberOfHosts.Dispatcher.BeginInvoke((Action)(() => numberOfHosts.Text = match4.Value));
                     }
-
                 }
 
                 Thread.Sleep(probe * 1000);
@@ -270,16 +263,12 @@ namespace Mahapps
                     var json = webClient.DownloadString(url);
                     JavaScriptSerializer ser = new JavaScriptSerializer();
                     healthStatus = ser.Deserialize<HealthStatus>(json);
-
                     
-
                     String url2 = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/system/uptime/json";
                     sytemUptime = ser.Deserialize<SystemUptime>(webClient.DownloadString(url2));
 
                     String url3 = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/memory/json";
                     memoryStatus = ser.Deserialize<MemoryStatus>(webClient.DownloadString(url3));
-
-
 
                     // Update GUI elements
                     if (healthStatus.HealthyStatus)

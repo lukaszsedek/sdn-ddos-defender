@@ -78,6 +78,7 @@ namespace Mahapps
         }
 
         // DDOS checker
+        // MAIN ALGORITHM
         public void DDOSThread()
         {
             while (true)
@@ -112,6 +113,18 @@ namespace Mahapps
                                 if (_t.Action == DDOSTable.action.DROP)
                                 {
                                     Console.WriteLine(_t.SwitchID + ":" + _t.Port + ":" + _t.MAX_RX_BPS);
+                                    // TO DO wyszukac w Flow Table pasujacy ruch.
+                                    // pattern to 2 x time 
+                                    
+                                    foreach(SDNFlowTable.Flow flow in sdnFlowTable.flows)
+                                    {
+                                        if (int.Parse(flow.durationSeconds)  < (3*probe) && flow.match.in_port == _t.Port)
+                                        {
+                                            Console.WriteLine("Atak jest mniejszy niz 15 sekund");
+                                            Console.WriteLine("Port {0} pasuje", _t.Port);
+                                            
+                                        }
+                                    }
                                 }
                                 
                             }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using System.Windows;
 
 namespace Mahapps
 {
@@ -57,7 +58,7 @@ namespace Mahapps
                     }
                     catch(WebException e)
                     {
-                        // TODO
+                        MessageBox.Show(_settings.IpAddress + " address is unreachable\n" + e.StackTrace, "Error 4", MessageBoxButton.OK, MessageBoxImage.Error);
 
                     }
                 }

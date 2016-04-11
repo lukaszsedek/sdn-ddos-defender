@@ -11,6 +11,7 @@ using System.Runtime.Serialization.Json;
 using System.IO;
 using Mahapps.JSONObj;
 using System.Net;
+using System.Windows;
 
 namespace Mahapps
 {
@@ -39,7 +40,7 @@ namespace Mahapps
                 }
                 catch (WebException e)
                 {
-
+                    MessageBox.Show(_settings.IpAddress + " address is unreachable\n" + e.StackTrace, "Error 4", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 Thread.Sleep(probe * 1000);
             }
