@@ -14,6 +14,8 @@ using System.Text.RegularExpressions;
 using System.Net;
 using System.Net.NetworkInformation;
 using Microsoft.Win32;
+using System.Threading.Tasks;
+using System.Text;
 
 namespace Mahapps
 {
@@ -23,28 +25,18 @@ namespace Mahapps
     public partial class MainWindow : MetroWindow, INotifyPropertyChanged
     {
         public delegate void degegateHealthStatus(string text);
-
-
-        // Settings singleton instance
-        SettingsSingleton _settings;
-
-        // List of all connected switches
-        ObservableCollection<SDNSwitch> listOfSwitchesObsrv;
-
-        List<SDNSwitch> listOfSwitches = new List<SDNSwitch>();
-
-        HealthStatus healthStatus = new HealthStatus();
-
-        SystemUptime sytemUptime = new SystemUptime();
-
-        MemoryStatus memoryStatus = new MemoryStatus();
-
-        FirewallStatus firewallStatus = new FirewallStatus();
-
-        ObservableCollection<FWEntry> FWrules = new ObservableCollection<FWEntry>();
+        
+        SettingsSingleton _settings; // Settings singleton instance        
+        ObservableCollection<SDNSwitch> listOfSwitchesObsrv; // List of all connected switches
+        List<SDNSwitch> listOfSwitches          = new List<SDNSwitch>();
+        HealthStatus healthStatus               = new HealthStatus();
+        SystemUptime sytemUptime                = new SystemUptime();
+        MemoryStatus memoryStatus               = new MemoryStatus();
+        FirewallStatus firewallStatus           = new FirewallStatus();
+        ObservableCollection<FWEntry> FWrules   = new ObservableCollection<FWEntry>();
 
         // Thread lock
-        private object Threadlock = new object();
+        private object Threadlock               = new object();
 
         // Query provbe interval
         int probe = 0;
@@ -60,11 +52,9 @@ namespace Mahapps
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
-        {
-            
+        {            
             InitializeComponent();
 
-  
             // get settings from XML
             loadSettingsFromXML("settings.xml");
 
@@ -73,7 +63,6 @@ namespace Mahapps
             statusThread.Start();
 
             //Start getting SDN Summary
-
             var summaryThread = new Thread(getSDNSummary);
             summaryThread.Start();
 
@@ -81,6 +70,7 @@ namespace Mahapps
             var healthStatusCheck = new Thread(getSDNHealthly);
             healthStatusCheck.Start();
 
+            // Topology thread
             DataContext = this;
             listOfSwitchesObsrv = new ObservableCollection<SDNSwitch>();
             listBoxOfSwitches.ItemsSource = listOfSwitchesObsrv;
@@ -92,6 +82,7 @@ namespace Mahapps
             var firewallthread = new Thread(getFirewallThread);
             firewallthread.Start();
 
+            // Firewall rules thread
             var updateFWrules = new Thread(updateFWrulesThread);
             updateFWrules.Start();
 
@@ -105,20 +96,27 @@ namespace Mahapps
             EvenGrid.ItemsSource = eventList;
             FWGrid.ItemsSource = FWrules;
 
+            // Load DDOS table Thread
             DDOSGrid.ItemsSource = DDosTable;
             loadDDOSRules("ddos_config.xml");
             var ddosCheckerThread = new Thread(DDOSThread);
             ddosCheckerThread.Start();
 
+            // FlowTable Thread
             FlowTableGird.ItemsSource = sdnFlowTable.flows;
             var flowTableThread = new Thread(FlowTableThread);
             flowTableThread.Start();
 
         }
 
+        // Double click on Switch list
+        // create explicite ALLOW Firewall rule for this switch
         private void ListBoxOfSwitches_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            MessageBox.Show("Double click");
+            // PUT a new explicite allow rule by creating background thread
+            String switchPID = ((SDNSwitch)listBoxOfSwitches.SelectedItem).switchDPID;
+            Thread thread = new Thread(() => addImplicitAllowFWRule(switchPID));
+            thread.Start();
         }
 
 
@@ -127,11 +125,9 @@ namespace Mahapps
         {
             Settings settingsWindow = new Settings();
             settingsWindow.Show();
-
-
         }
 
-        // Loading process
+        // Loading process of settings XML file
         private bool loadSettingsFromXML(String XMLPath)
         {
             String tempStr = XMLPath;
@@ -190,9 +186,9 @@ namespace Mahapps
                                 MessageBox.Show("Unable to connect REST service. Please chech Floodlight application or change IP address in settings.xml file  \n" + e.Message + "\n" + e.StackTrace, "Error 5", MessageBoxButton.OK, MessageBoxImage.Error);
                                 Environment.Exit(0);
                             }
-                            }
+                            } // using...
                             
-                    }
+                    } // if... 
                     else
                     {
                         MessageBox.Show(_settings.IpAddress + " address is unreachable", "Error 4", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -221,7 +217,9 @@ namespace Mahapps
         }
 
  
-        // Get number of links, switches
+        // Get number of links, switches....
+        // Needed manulaly parse JSON because of wrong format of JSON file. It contains invalid characters as "#"
+        // Parsed by regexp
         private void getSDNSummary()
         {
             String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/core/controller/summary/json";
@@ -253,6 +251,7 @@ namespace Mahapps
         }
 
         // Get SDN controller status
+        // Update Controller Health status
         private void getSDNHealthly()
         {
             while (true)
@@ -292,67 +291,95 @@ namespace Mahapps
             }
         }
 
-
         // Button action to enable statistics
         private void StatisticsButton_Click(object sender, RoutedEventArgs e)
         {
             String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/statistics/config/enable/json";
-            HttpWebRequest request = WebRequest.CreateHttp(url);
-            request.Method = "POST";
-            request.AllowWriteStreamBuffering = false;
-            request.ContentType = "application/json";
-            request.Accept = "Accept=application/json";
-            request.SendChunked = false;
-            request.ContentLength = 0;
-            using (var writer = new StreamWriter(request.GetRequestStream()))
+            try
             {
-                
+                WebRequest request = WebRequest.Create(url);
+                request.Method = "POST";
+                String postData = "";
+                byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+                request.ContentLength = byteArray.Length;
+                Stream dataStream = request.GetRequestStream();
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                dataStream.Close();
+                WebResponse response = request.GetResponse();
+                Console.WriteLine(((HttpWebResponse)response).StatusDescription);
+                dataStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(dataStream);
+                string responseFromServer = reader.ReadToEnd();
+                Console.WriteLine(responseFromServer);
+                reader.Close();
+                dataStream.Close();
+                response.Close();
             }
-            var response = request.GetResponse() as HttpWebResponse;
-            Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Statistics : " + response.StatusCode.ToString(), EventItem.SEVERITY.Informational))));
-
+            catch (WebException exception)
+            {
+                addLogUI(exception.StackTrace, 0);
+            }
         }
 
         // Button action to enable/disable firewall functionality
         private void FirewallToggleButton_Click(object sender, RoutedEventArgs e)
         {
-
-            String FWaction = "enable";
-
-            if (FirewallStatusText.Text.Contains("running"))
-            {
-                FWaction = "disable";
-            }
-            else
-            {
-                FWaction = "enable";
-            }
-            String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/module/" + FWaction+ "/json";
-            HttpWebRequest request = WebRequest.CreateHttp(url);
-            request.Method = "PUT";
-            request.AllowWriteStreamBuffering = false;
-            request.ContentType = "application/json";
-            request.Accept = "Accept=application/json";
-            request.SendChunked = false;
-            request.ContentLength = 0;
-            using (var writer = new StreamWriter(request.GetRequestStream()))
-            {
-//                writer.Write();
-            }
-            var response = request.GetResponse() as HttpWebResponse;
-
-            
-
-
-            Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem("Firewall module status : " + response.StatusCode.ToString(), EventItem.SEVERITY.Informational))));
+            Thread thread = new Thread(turnOnFirewall);            
+            thread.Start();
         }
 
-        private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
-{
+        /* 
+        By default Floodlight controller has firewall module disabled
+        When you turn on firewall it creates by default implicit DENY ALL rules for all switches
+        To avoid dropping packets, please be sure you apply EXPLICIT ALLOW all 
+        This method enables firewall
+        */
+        public void turnOnFirewall()
+        {
+            String url = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/module/enable/json";
+            try
+            {
+                WebRequest request = WebRequest.Create(url);
+                request.Method = "PUT";
+                String postData = "";
+                byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+                request.ContentLength = byteArray.Length;
+                Stream dataStream = request.GetRequestStream();
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                dataStream.Close();
+                WebResponse response = request.GetResponse();
+                Console.WriteLine(((HttpWebResponse)response).StatusDescription);
+                dataStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(dataStream);
+                string responseFromServer = reader.ReadToEnd();
+                Console.WriteLine(responseFromServer);
+                reader.Close();
+                dataStream.Close();
+                response.Close();
 
-    System.Windows.Data.CollectionViewSource healthStatusViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("healthStatusViewSource")));
-    // Load data by setting the CollectionViewSource.Source property:
-    // healthStatusViewSource.Source = [generic data source]
+            }
+            catch (WebException exception)
+            {
+                Console.WriteLine(exception.StackTrace);
+                addLogUI(exception.StackTrace, 0);
+            }
+        }
+
+        // method for adding a new event in Log Events
+        // _msg message to put 
+        // severity 0... 6 0 - alert, 6 - Debug. Syslog convention
+        public void addLogUI(string _msg, int severity)
+        {
+            EventItem.SEVERITY _sev = (EventItem.SEVERITY)severity;
+            Dispatcher.BeginInvoke((Action)(() => eventList.Add(new EventItem(_msg, _sev))));
+        }
+              
+        private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+
+           System.Windows.Data.CollectionViewSource healthStatusViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("healthStatusViewSource")));
+            // Load data by setting the CollectionViewSource.Source property:
+            // healthStatusViewSource.Source = [generic data source]
 }
 
         private void AddDDOS_Button_Click(object sender, RoutedEventArgs e)
@@ -371,11 +398,12 @@ namespace Mahapps
                 loadDDOSRules(openFileDialog.FileName);
             }
         }
+        
         // Forced closing app
         private void MetroWindow_Closing(object sender, CancelEventArgs e)
-{
-    Environment.Exit(0);
-}
+        {
+            Environment.Exit(0);
+        }
 
 
     }

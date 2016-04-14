@@ -68,7 +68,7 @@
                         <TextBox Grid.Column="1" Grid.Row="3" Margin="3" IsEnabled="False" x:Name="numberOfHosts"/>
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="listofSwichesGroupBox" Header="List of Switches" Grid.Row="0" Grid.Column="1" Height="180" >
+                <GroupBox x:Name="listofSwichesGroupBox" Header="active switches" Grid.Row="0" Grid.Column="1" Height="180" >
                     <ListBox x:Name="listBoxOfSwitches" DisplayMemberPath="switchDPID" />
                 </GroupBox>
                 <GroupBox x:Name="HealthStatusBox" Header="Health Status" Grid.Row="0" Grid.Column="2" Height="180">
@@ -93,7 +93,7 @@
                         <TextBox Grid.Column="1" Grid.Row="3" Margin="3" IsEnabled="False" x:Name="TotalMemoryBox" />
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="FirewallStatusBox" Header="Utils" Grid.Row="0" Grid.Column="3" Height="180">
+                <GroupBox x:Name="FirewallStatusBox" Header="Utils" Grid.Row="0" Grid.Column="3" Height="180" Margin="10,22,0,21">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -106,14 +106,17 @@
                             <ColumnDefinition Width="100" />
                             <ColumnDefinition Width="100" />
                         </Grid.ColumnDefinitions>
+                        <!-- Firewall-->
                         <Label Grid.Row="0" Grid.Column="0" Content="Firewall Status:"/>
-                        <Button Grid.Row="0" Grid.Column="2" Content="ENABLE" Click="FirewallToggleButton_Click"  x:Name="FirewallToggleButton" />
-                        <TextBox Grid.Column="1" Grid.Row="0" Margin="3" Width="100" IsEnabled="False" x:Name="FirewallStatusText"/>
-                        <Label Grid.Row="1" Grid.Column="0" Content="Statistics"/>
+                        <TextBox Grid.Column="1" Grid.Row="0" IsEnabled="False" x:Name="FirewallStatusText"/>
+                        <Button Grid.Row="0" Grid.Column="2" Content="enable" Click="FirewallToggleButton_Click"  x:Name="FirewallToggleButton" Margin="47,0,-47,0" />
+                        <Button Grid.Row="1" Grid.Column="2" Content="Add new rule" x:Name="addRulleFirewallButton" Click="addNewFirewallButton_click" Margin="47,2,-47,0" Grid.RowSpan="3"/>
                         
-                        <Button Grid.Row="1" Grid.Column="2" x:Name="StatisticsButton" Content="ENABLE" Click="StatisticsButton_Click" />
-                        <Label Grid.Row="2" Grid.Column="0" Content="DDOS Rules"/>
-                        <Button Grid.Row="2" Grid.Column="3" Content="Load" Click="AddDDOS_Button_Click"/>
+                        <!--Label Grid.Row="2" Grid.Column="0" Content="Statistics"/>
+                        
+                        <Button Grid.Row="2" Grid.Column="2" x:Name="StatisticsButton" Content="ENABLE" Click="StatisticsButton_Click" />
+                        <Label Grid.Row="4" Grid.Column="0" Content="DDOS Rules"/>
+                        <Button Grid.Row="4" Grid.Column="3" Content="Load" Click="AddDDOS_Button_Click"/ -->
                     </Grid>
                 </GroupBox>
                 <GroupBox x:Name="DDOSrules" Header="DDOS rules" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan ="3">

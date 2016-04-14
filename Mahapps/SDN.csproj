@@ -122,6 +122,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppModel.cs" />
+    <Compile Include="FirewallRuleWindow.xaml.cs">
+      <DependentUpon>FirewallRuleWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="JSONObj\ControllerSwitchesSummary.cs" />
     <Compile Include="EventItem.cs" />
     <Compile Include="JSONObj\DDOSTable.cs" />
@@ -141,6 +144,10 @@
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
     <Compile Include="SettingsSingleton.cs" />
+    <Page Include="FirewallRuleWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

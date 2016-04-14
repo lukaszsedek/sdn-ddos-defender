@@ -44,11 +44,54 @@ namespace DDOSDefender.JSONObj
             public string ipv4_dst { get; set; }
             public string udp_src { get; set; }
             public string udp_dst { get; set; }
+            public string tcp_src { get; set; }
+            public string tcp_dst { get; set; }
 
             public override string ToString()
             {
-                return " in port=" + in_port + " dst=" + ipv4_dst + " src=" + ipv4_src + " upd_src=" + udp_src + " udp_dst=" + udp_src;
+                StringBuilder result = new StringBuilder();
                 
+                // port
+                if(in_port != "")
+                {
+                    result.AppendLine("Ingress port \t" + in_port);
+                }
+                else
+                {
+                    result.AppendLine("Ingress port \t" );
+                }
+                // IPv4.src
+                if(ipv4_src != "")
+                {
+                    result.AppendLine("IPv4 source  \t" + ipv4_src);
+                }
+                else
+                {
+                    result.AppendLine("IPv4 source  \t any");
+                }
+                // IPv4.dst
+                if (ipv4_dst != "")
+                {
+                    result.AppendLine("IPv4 destination  \t" + ipv4_dst);
+                }
+                else
+                {
+                    result.AppendLine("IPv4 source  \t any");
+                }
+                // UDP
+                if (udp_dst != null && udp_src != null)
+                {
+                    result.AppendLine("UDP dst port\t" + udp_dst);
+                    result.AppendLine("UDP src port\t" + udp_src);
+
+                }
+                // TCP
+                if(tcp_dst != null && tcp_src != null)
+                {
+                    result.AppendLine("TCP dst port\t" + tcp_dst);
+                    result.AppendLine("TCP src port\t" + tcp_src);
+                }
+                return result.ToString();
             }
         }
 
