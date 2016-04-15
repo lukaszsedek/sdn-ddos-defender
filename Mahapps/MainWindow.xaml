@@ -46,7 +46,7 @@
                     <ColumnDefinition Width="1*"  />
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-                <GroupBox Grid.Row="0" Grid.Column="0" x:Name="groupBox2" Height="180"  Header="Summary" Margin="5">
+                <WrapPanel Grid.Row="0" Grid.Column="0" x:Name="groupBox2" Height="180" Margin="5">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -55,23 +55,46 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="300"  />
-                            <ColumnDefinition Width="50" />
+                            <ColumnDefinition Width="110"  />
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
                         </Grid.ColumnDefinitions>
-                        <Label Grid.Row="0" Grid.Column="0" Content="# Switches:"/>
-                        <Label Grid.Row="1" Grid.Column="0" Content="# quarantine ports:"/>
-                        <Label Grid.Row="2" Grid.Column="0" Content="# inter-switch links:"/>
-                        <Label Grid.Row="3" Grid.Column="0" Content="# hosts"/>
-                        <TextBox Grid.Column="1" Grid.Row="0" Margin="3" IsEnabled="False" x:Name="numberOfSwitchesTextBox"/>
-                        <TextBox Grid.Column="1" Grid.Row="1" Margin="3"  IsEnabled="False" x:Name="numberOfQuarantinePortsBox"/>
-                        <TextBox Grid.Column="1" Grid.Row="2" Margin="3" IsEnabled="False" x:Name="numberOfISLBox"/>
-                        <TextBox Grid.Column="1" Grid.Row="3" Margin="3" IsEnabled="False" x:Name="numberOfHosts"/>
+                        <Controls:Tile Title="Switches"
+                                       Grid.Column="0"
+                                       Grid.Row="0"
+                                       Height="auto"
+                                       Width="110"
+                                       x:Name="numberOfSwitchesTextBox"
+                            />
+                        <Controls:Tile Title="Quarantine"
+                                       Count="0"
+                                       Grid.Column="1"
+                                       Grid.Row="0"
+                                       Width="110"
+                                       x:Name="numberOfQuarantinePortsBox"/>
+                        <Controls:Tile Title="Hosts"
+                                       Count="0"
+                                       Width="110"
+                                       Grid.Column="2"
+                                       Grid.Row="0"
+                                       x:Name="numberOfHosts"/>
+                        <Controls:Tile Title="Interswitch Links"
+                                       x:Name="numberOfISLBox"
+                                       Width="110"
+                                       Height="auto"
+                                       Grid.Column="3"
+                                       Grid.Row="0"
+                                       />
+
+
+                        
                     </Grid>
-                </GroupBox>
-                <GroupBox x:Name="listofSwichesGroupBox" Header="active switches" Grid.Row="0" Grid.Column="1" Height="180" >
+                </WrapPanel>
+                <GroupBox x:Name="listofSwichesGroupBox" Header="active switches" Grid.Row="0" Grid.Column="2" Height="180" >
                     <ListBox x:Name="listBoxOfSwitches" DisplayMemberPath="switchDPID" />
                 </GroupBox>
-                <GroupBox x:Name="HealthStatusBox" Header="Health Status" Grid.Row="0" Grid.Column="2" Height="180">
+                <GroupBox x:Name="HealthStatusBox" Header="Health Status" Grid.Row="0" Grid.Column="3" Height="180">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -93,32 +116,60 @@
                         <TextBox Grid.Column="1" Grid.Row="3" Margin="3" IsEnabled="False" x:Name="TotalMemoryBox" />
                     </Grid>
                 </GroupBox>
-                <GroupBox x:Name="FirewallStatusBox" Header="Utils" Grid.Row="0" Grid.Column="3" Height="180" Margin="10,22,0,21">
+                
+                <WrapPanel x:Name="FirewallStatusBox" Grid.Row="0" Grid.Column="1" Height="180" Margin="10,22,0,21">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
+                           
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150"  />
-                            <ColumnDefinition Width="100" />
-                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="110"  />
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="110" />
                         </Grid.ColumnDefinitions>
-                        <!-- Firewall-->
-                        <Label Grid.Row="0" Grid.Column="0" Content="Firewall Status:"/>
-                        <TextBox Grid.Column="1" Grid.Row="0" IsEnabled="False" x:Name="FirewallStatusText"/>
-                        <Button Grid.Row="0" Grid.Column="2" Content="enable" Click="FirewallToggleButton_Click"  x:Name="FirewallToggleButton" Margin="47,0,-47,0" />
-                        <Button Grid.Row="1" Grid.Column="2" Content="Add new rule" x:Name="addRulleFirewallButton" Click="addNewFirewallButton_click" Margin="47,2,-47,0" Grid.RowSpan="3"/>
+                        <Controls:Tile Title="Firewall"
+                                       TiltFactor="2"
+                                       Width="110"
+                                       Height="140"
+                                       Count="OFF"
+                                       Grid.Column="0"
+                                       x:Name="firewallTile"
+                                       Click="FirewallToggleButton_Click">
+                        </Controls:Tile>
+                        <Controls:Tile Title="Clear ACL" 
+                            TiltFactor="2"
+                            Width="100" Height="140" 
+                            Count="1"
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            x:Name="ACLTile"
+                           Click="ACLTile_Click">
+                        </Controls:Tile>
+                        <Controls:Tile Title="Statistics"
+                                       TiltFactor="2"
+                                       Width="110"
+                                       Height="140"
+                                       Count="enable"
+                                       Grid.Column="2"
+                                       Grid.Row="0"
+                                       Click="StatisticsButton_Click">
+                            
+                        </Controls:Tile>
+                        <Controls:Tile Title="DDOS rules"
+                                       TiltFactor="2"
+                                       Width="110"
+                                       Height="140"
+                                       Count="Add"
+                                       Grid.Column="3"
+                                       Grid.Row="0"
+                                       Click="AddDDOS_Button_Click">
+
+                        </Controls:Tile>
                         
-                        <!--Label Grid.Row="2" Grid.Column="0" Content="Statistics"/>
-                        
-                        <Button Grid.Row="2" Grid.Column="2" x:Name="StatisticsButton" Content="ENABLE" Click="StatisticsButton_Click" />
-                        <Label Grid.Row="4" Grid.Column="0" Content="DDOS Rules"/>
-                        <Button Grid.Row="4" Grid.Column="3" Content="Load" Click="AddDDOS_Button_Click"/ -->
                     </Grid>
-                </GroupBox>
+                </WrapPanel>
                 <GroupBox x:Name="DDOSrules" Header="DDOS rules" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan ="3">
                     <DataGrid x:Name="DDOSGrid" ItemsSource="{ Binding DDosTable, UpdateSourceTrigger=PropertyChanged}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"/>
                 </GroupBox>
@@ -134,6 +185,10 @@
 
             </DataGrid>
         </TabItem>
+        <TabItem Header="Access Lists">
+            <DataGrid x:Name="aclGrid" CanUserReorderColumns="True"></DataGrid>
+        </TabItem>
+            
         <TabItem Header="Firewall">
             <DataGrid x:Name="FWGrid" ItemsSource="{Binding FWrules, UpdateSourceTrigger=PropertyChanged}" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"></DataGrid>
         </TabItem>

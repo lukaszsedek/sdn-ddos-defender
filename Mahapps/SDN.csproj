@@ -125,6 +125,7 @@
     <Compile Include="FirewallRuleWindow.xaml.cs">
       <DependentUpon>FirewallRuleWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="JSONObj\ACL.cs" />
     <Compile Include="JSONObj\ControllerSwitchesSummary.cs" />
     <Compile Include="EventItem.cs" />
     <Compile Include="JSONObj\DDOSTable.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="JSONObj\MemoryStatus.cs" />
     <Compile Include="JSONObj\Statistics.cs" />
     <Compile Include="JSONObj\SystemUptime.cs" />
+    <Compile Include="Main\MainACLThread.cs" />
     <Compile Include="Main\MainDDOSRules.cs" />
     <Compile Include="Main\MainFlowTableThread.cs" />
     <Compile Include="Main\MainFWThreads.cs" />

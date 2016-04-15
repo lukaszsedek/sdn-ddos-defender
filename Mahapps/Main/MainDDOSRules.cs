@@ -89,7 +89,6 @@ namespace Mahapps
         {
             while (true)
             {
-                Console.WriteLine("DEBUG DDOS CHECKER START");
                 // Check each entry in DDOS Table
                 foreach (DDOSTable _t in DDosTable)
                 {
@@ -112,24 +111,23 @@ namespace Mahapps
                                 if(_t.Action == DDOSTable.action.ALERT)
                                 {
                                     String alarmMSG = "DDOS detected! " + _t.SwitchID + ": " + _t.Port +
-                                        " \\current MAX RX BPS value is higher than expected. Current value is "
+                                        " \ncurrent MAX RX BPS value is higher than expected. Current value is "
                                         + sMAXRX + " threshold is " + tMAXRX;
                                     addLogUI(alarmMSG, 1);
                                 }
                                 // block suspected flows
                                 if (_t.Action == DDOSTable.action.DROP)
                                 {
-                                    Console.WriteLine(_t.SwitchID + ":" + _t.Port + ":" + _t.MAX_RX_BPS);
-                                    // TO DO wyszukac w Flow Table pasujacy ruch.
-                                    // pattern to 2 x time 
                                     
                                     foreach(SDNFlowTable.Flow flow in sdnFlowTable.flows)
                                     {
+                                        // TO DO !!! Sprawdzanie tylko portu
                                         if (int.Parse(flow.durationSeconds)  < (3*probe) && flow.match.in_port == _t.Port)
                                         {
                                             Console.WriteLine("Switch {0} Port {1} flow duration {2} flow match {3}",_t.SwitchID, _t.Port, flow.durationSeconds, flow.match);
-                                            applyBlockFirewallRule(flow);
-
+                                            //            applyBlockFirewallRule(flow);
+                                           
+                                            addNewACL(flow);
                                         }
                                     }
                                 }
@@ -148,7 +146,17 @@ namespace Mahapps
                                 }
                                 if (_t.Action == DDOSTable.action.DROP)
                                 {
+                                    foreach (SDNFlowTable.Flow flow in sdnFlowTable.flows)
+                                    {
+                                        if (int.Parse(flow.durationSeconds) < (3 * probe) && flow.match.in_port == _t.Port)
+                                        {
+                                            Console.WriteLine("Switch {0} Port {1} flow duration {2} flow match {3}", _t.SwitchID, _t.Port, flow.durationSeconds, flow.match);
+                                            //            applyBlockFirewallRule(flow);
 
+                                            addNewACL(flow);
+
+                                        }
+                                    }
                                 }
                             }
                             
@@ -156,9 +164,6 @@ namespace Mahapps
                     }
                     
                 }
-
-                Console.WriteLine("DEBUG DDOS CHECKER STOP");
-
                 Thread.Sleep(probe * 1000);
             }
 
@@ -166,7 +171,40 @@ namespace Mahapps
 
         public void applyBlockFirewallRule(SDNFlowTable.Flow flow)
         {
-            Console.WriteLine("drop {0}", flow);
+            String sourceIPv4 = flow.match.ipv4_src;
+            String destinationIPv4 = flow.match.ipv4_dst;
+            if(sourceIPv4 == null)
+            {
+                sourceIPv4 = "";
+            }
+            if( destinationIPv4 == null)
+            {
+                destinationIPv4 = "";
+            }
+            String transportProtocol = "";
+            String tp_src = "";
+            String tp_dst = "";
+            if (flow.match.tcp_dst != "" && flow.match.udp_dst == null)
+            {
+                transportProtocol = "TCP";
+                tp_src = flow.match.tcp_src;
+                tp_dst = flow.match.tcp_dst;
+            }
+            else if (flow.match.udp_dst != "")
+            {
+                transportProtocol = "UDP";
+                tp_dst = flow.match.udp_dst;
+                tp_src = flow.match.udp_src;
+            }
+
+            Console.Write("Creaing rule \n IP SRC {0}\n IP DST {1}\n NW-PROTO {2}\n, T SRC {3}\n T DST{4}\n", sourceIPv4, destinationIPv4, transportProtocol, tp_src, tp_dst);
+
+            if (sourceIPv4.Length > 7 && destinationIPv4.Length > 7)
+            {
+                addCustomFirewallRule(flow.switchID, "DENY", sourceIPv4, destinationIPv4, transportProtocol, tp_src, tp_dst);
+            }
+            else
+                Console.WriteLine("Wrong flow");
         }
     }
 

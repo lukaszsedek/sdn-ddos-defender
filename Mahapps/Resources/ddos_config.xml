@@ -2,7 +2,7 @@
 <DDOS>
   <rule id="1">
     <switch>
-      <DPID>00:00:00:00:00:00:00:04</DPID>
+      <DPID>00:00:00:00:00:00:00:03</DPID>
       <port>3</port>
     </switch>
     <flow>

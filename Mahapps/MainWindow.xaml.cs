@@ -16,6 +16,7 @@ using System.Net.NetworkInformation;
 using Microsoft.Win32;
 using System.Threading.Tasks;
 using System.Text;
+using DDOSDefender.JSONObj;
 
 namespace Mahapps
 {
@@ -34,6 +35,7 @@ namespace Mahapps
         MemoryStatus memoryStatus               = new MemoryStatus();
         FirewallStatus firewallStatus           = new FirewallStatus();
         ObservableCollection<FWEntry> FWrules   = new ObservableCollection<FWEntry>();
+        ObservableCollection<ACL> aclList       = new ObservableCollection<ACL>();
 
         // Thread lock
         private object Threadlock               = new object();
@@ -95,6 +97,17 @@ namespace Mahapps
             eventList.Add(new EventItem { Severity=EventItem.SEVERITY.Debug, Message = "SDN DDOS mitigation application is up and running" });
             EvenGrid.ItemsSource = eventList;
             FWGrid.ItemsSource = FWrules;
+
+            // ACL
+
+            aclGrid.DataContext = aclList;
+            ACL temp = new ACL();
+            temp.action = "DROP";
+            temp.id = 1;
+            aclList.Add(temp);
+            aclGrid.ItemsSource = aclList;
+            Thread aclThread = new Thread(aclThreadFunction);
+            aclThread.Start();
 
             // Load DDOS table Thread
             DDOSGrid.ItemsSource = DDosTable;
@@ -235,13 +248,13 @@ namespace Mahapps
                     {
                         Regex r = new Regex(@"(\d+)", RegexOptions.IgnoreCase);
                         Match match1 = r.Match(jsonArray[0]);
-                        numberOfSwitchesTextBox.Dispatcher.BeginInvoke((Action)(() => numberOfSwitchesTextBox.Text = "" + match1.Value));
+                        numberOfSwitchesTextBox.Dispatcher.BeginInvoke((Action)(() => numberOfSwitchesTextBox.Count = "" + match1.Value));
                         Match match2 = r.Match(jsonArray[1]);
-                        numberOfQuarantinePortsBox.Dispatcher.BeginInvoke((Action)(() => numberOfQuarantinePortsBox.Text = "" + match2.Value));
+                        numberOfQuarantinePortsBox.Dispatcher.BeginInvoke((Action)(() => numberOfQuarantinePortsBox.Count = "" + match2.Value));
                         Match match3 = r.Match(jsonArray[2]);
-                        numberOfISLBox.Dispatcher.BeginInvoke((Action)(() => numberOfISLBox.Text = "" + match2.Value));
+                        numberOfISLBox.Dispatcher.BeginInvoke((Action)(() => numberOfISLBox.Count = "" + match2.Value));
                         Match match4 = r.Match(jsonArray[3]);
-                        numberOfHosts.Dispatcher.BeginInvoke((Action)(() => numberOfHosts.Text = match4.Value));
+                        numberOfHosts.Dispatcher.BeginInvoke((Action)(() => numberOfHosts.Count = match4.Value));
                     }
                 }
 
@@ -306,11 +319,9 @@ namespace Mahapps
                 dataStream.Write(byteArray, 0, byteArray.Length);
                 dataStream.Close();
                 WebResponse response = request.GetResponse();
-                Console.WriteLine(((HttpWebResponse)response).StatusDescription);
                 dataStream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(dataStream);
                 string responseFromServer = reader.ReadToEnd();
-                Console.WriteLine(responseFromServer);
                 reader.Close();
                 dataStream.Close();
                 response.Close();
@@ -348,11 +359,9 @@ namespace Mahapps
                 dataStream.Write(byteArray, 0, byteArray.Length);
                 dataStream.Close();
                 WebResponse response = request.GetResponse();
-                Console.WriteLine(((HttpWebResponse)response).StatusDescription);
                 dataStream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(dataStream);
                 string responseFromServer = reader.ReadToEnd();
-                Console.WriteLine(responseFromServer);
                 reader.Close();
                 dataStream.Close();
                 response.Close();
@@ -404,7 +413,6 @@ namespace Mahapps
         {
             Environment.Exit(0);
         }
-
 
     }
 }

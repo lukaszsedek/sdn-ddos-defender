@@ -37,11 +37,11 @@ namespace Mahapps
                     if (firewallStatus.result.Equals("firewall disabled"))
                     {
                         
-                        FirewallStatusText.Dispatcher.BeginInvoke(d,  new object[] { "OFF" });   
+                        firewallTile.Dispatcher.BeginInvoke(d,  new object[] { "OFF" });   
                     }
                     else
                     {
-                        FirewallStatusText.Dispatcher.BeginInvoke(d, new object[] { "OK" });
+                        firewallTile.Dispatcher.BeginInvoke(d, new object[] { "OK" });
                     }
                 }
                 Thread.Sleep(probe * 1000);
@@ -78,7 +78,7 @@ namespace Mahapps
         // Update FriwallStatusText UI field
         private void setFwStatusText(String text)
         {
-            FirewallStatusText.Text = text;
+            firewallTile.Count = text;
         }
 
         // Add implicit Allow all firewall rule to switch
@@ -105,7 +105,6 @@ namespace Mahapps
                 dataStream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(dataStream);
                 string responseFromServer = reader.ReadToEnd();
-                Console.WriteLine(responseFromServer);
                 reader.Close();
                 dataStream.Close();
                 response.Close();
@@ -123,17 +122,17 @@ namespace Mahapps
         {
 
             // Testing purpose 
-            addCustomFirewallRule("ALLOW", "10.20.11.0", "10.2.2.2", "UDP", "1111", "2222");
-            addCustomFirewallRule("ALLOW", "10.20.11.1", "10.2.2.2", "UDP", "1111", "2222");
-            addCustomFirewallRule("ALLOW", "10.20.11.2", "10.2.2.2", "UDP", "1111", "2222");
-            addCustomFirewallRule("ALLOW", "10.20.11.3", "10.2.2.2", "UDP", "1111", "2222");
+            addCustomFirewallRule("00:00:00:00:00:00:00:04", "DENY", "10.20.11.0", "10.2.2.2", "UDP", "1111", "2222");
+            addCustomFirewallRule("00:00:00:00:00:00:00:04", "DENY", "10.20.11.1", "10.2.2.2", "UDP", "1111", "2222");
+            addCustomFirewallRule("00:00:00:00:00:00:00:04", "DENY", "10.20.11.2", "10.2.2.2", "UDP", "1111", "2222");
+            addCustomFirewallRule("00:00:00:00:00:00:00:04", "DENY", "10.20.11.3", "10.2.2.2", "UDP", "1111", "2222");
 
         }
 
         /*
             send post to sdn controller to deny or allow particular flow
         */
-        public void addCustomFirewallRule(String action, String ipSource, String ipDst, String nw_proto, String tp_src, String tp_dst)
+        public void addCustomFirewallRule(String switchID, String action, String ipSource, String ipDst, String nw_proto, String tp_src, String tp_dst)
         {
             if (!(action.Equals("ALLOW") || action.Equals("DENY")))
                 return;
@@ -144,9 +143,8 @@ namespace Mahapps
 
             // 1. Build JSON message
             
-            string json = "{ \"src-ip\": \"" + ipSource + "\", \"dst-ip\": \"" + ipDst + "/32\", \"nw-proto\":\"" + nw_proto + "\", \"tp-src\":\"" + tp_src +"\", \"tcp-dst\":\"" + tp_dst + "\", \"action\":\""  +  action + "\" }";
+            string json = "{  \"src-ip\": \"" + ipSource + "\", \"dst-ip\": \"" + ipDst + "/32\", \"nw-proto\":\"" + nw_proto + "\", \"tp-src\":\"" + tp_src +"\", \"tcp-dst\":\"" + tp_dst + "\", \"action\":\""  +  action + "\" }";
             // 2. send POST
-            Console.WriteLine(json);
             String urlFirewall = "http://" + _settings.IpAddress + ":" + _settings.Port + "/wm/firewall/rules/json";
             try
             {
@@ -158,11 +156,10 @@ namespace Mahapps
                 dataStream.Write(byteArray, 0, byteArray.Length);
                 dataStream.Close();
                 WebResponse response = request.GetResponse();
-                addLogUI("Add firewall rule status " + ((HttpWebResponse)response).StatusDescription, 5);
+                addLogUI("Add firewall rule status " + json + " \t" +  ((HttpWebResponse)response).StatusDescription, 5);
                 dataStream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(dataStream);
                 string responseFromServer = reader.ReadToEnd();
-                Console.WriteLine(responseFromServer);
                 reader.Close();
                 dataStream.Close();
                 response.Close();
