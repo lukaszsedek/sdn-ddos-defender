@@ -126,7 +126,7 @@ namespace Mahapps
                 dataStream.Write(byteArray, 0, byteArray.Length);
                 dataStream.Close();
                 WebResponse response = request.GetResponse();
-                addLogUI("New DENY rule addedd  + " + ((HttpWebResponse)response).StatusDescription, 5);
+                addLogUI(((HttpWebResponse)response).StatusDescription + "New DENY rule addedd " + flow, 5);
                 dataStream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(dataStream);
                 string responseFromServer = reader.ReadToEnd();

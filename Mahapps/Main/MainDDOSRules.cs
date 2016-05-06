@@ -111,7 +111,7 @@ namespace Mahapps
                                 if(_t.Action == DDOSTable.action.ALERT)
                                 {
                                     String alarmMSG = "DDOS detected! " + _t.SwitchID + ": " + _t.Port +
-                                        " \ncurrent MAX RX BPS value is higher than expected. Current value is "
+                                        " current MAX RX BPS value is higher than expected. Current value is "
                                         + sMAXRX + " threshold is " + tMAXRX;
                                     addLogUI(alarmMSG, 1);
                                 }
@@ -122,7 +122,7 @@ namespace Mahapps
                                     foreach(SDNFlowTable.Flow flow in sdnFlowTable.flows)
                                     {
                                         // TO DO !!! Sprawdzanie tylko portu
-                                        if (int.Parse(flow.durationSeconds)  < (3*probe) && flow.match.in_port == _t.Port)
+                                        if (int.Parse(flow.durationSeconds)  < (3*probe) && flow.match.in_port == _t.Port && flow.match.ipv4_dst == _t.IPDST)
                                         {
                                             Console.WriteLine("Switch {0} Port {1} flow duration {2} flow match {3}",_t.SwitchID, _t.Port, flow.durationSeconds, flow.match);
                                             //            applyBlockFirewallRule(flow);
@@ -140,7 +140,7 @@ namespace Mahapps
                                 if(_t.Action == DDOSTable.action.ALERT)
                                 {
                                     String alarmMSG = "DDOS detected! " + _t.SwitchID + ": " + _t.Port +
-                                        " \\current MAX TX BPS value is higher than expected. Current value is "
+                                        " current MAX TX BPS value is higher than expected. Current value is "
                                         + sMAXTX + " threshold is " + tMAXTX;
                                     addLogUI(alarmMSG, 1);
                                 }

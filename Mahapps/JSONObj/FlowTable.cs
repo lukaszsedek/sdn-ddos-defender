@@ -32,6 +32,11 @@ namespace DDOSDefender.JSONObj
             public string flags { get; set; }
             public Match match { get; set; }
             public Instructions instructions { get; set; }
+
+            public override string ToString()
+            {
+                return "" + switchID + " " + durationSeconds + " " + match;
+            }
         }
 
         public class Match

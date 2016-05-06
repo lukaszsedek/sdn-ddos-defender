@@ -17,6 +17,7 @@ using Microsoft.Win32;
 using System.Threading.Tasks;
 using System.Text;
 using DDOSDefender.JSONObj;
+using System.Linq;
 
 namespace Mahapps
 {
@@ -88,7 +89,10 @@ namespace Mahapps
             var updateFWrules = new Thread(updateFWrulesThread);
             updateFWrules.Start();
 
-            statsGrid.ItemsSource = stats;
+            // Stats
+            statsGrid.ItemsSource = stats.OrderByDescending( x => x.BPPSRX);
+            statsGrid.DataContext = stats.OrderByDescending(x => x.BPPSRX );
+            
             var getStats = new Thread(getStatsThread);
             getStats.Start();
             
@@ -101,6 +105,8 @@ namespace Mahapps
             // ACL
 
             aclGrid.DataContext = aclList;
+            aclGrid.DataContext = ((ObservableCollection<ACL>)aclGrid.DataContext).OrderBy(x => x.id);
+
             ACL temp = new ACL();
             temp.action = "DROP";
             temp.id = 1;
@@ -252,7 +258,7 @@ namespace Mahapps
                         Match match2 = r.Match(jsonArray[1]);
                         numberOfQuarantinePortsBox.Dispatcher.BeginInvoke((Action)(() => numberOfQuarantinePortsBox.Count = "" + match2.Value));
                         Match match3 = r.Match(jsonArray[2]);
-                        numberOfISLBox.Dispatcher.BeginInvoke((Action)(() => numberOfISLBox.Count = "" + match2.Value));
+                        numberOfISLBox.Dispatcher.BeginInvoke((Action)(() => numberOfISLBox.Count = "" + match3.Value));
                         Match match4 = r.Match(jsonArray[3]);
                         numberOfHosts.Dispatcher.BeginInvoke((Action)(() => numberOfHosts.Count = match4.Value));
                     }
